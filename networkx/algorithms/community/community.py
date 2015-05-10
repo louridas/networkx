@@ -11,7 +11,7 @@ def girvan_newman(G, weight=None):
     ----------
     G : NetworkX graph
 
-    weight: string, optional (default=None)
+    weight : string, optional (default=None)
        Edge data key corresponding to the edge weight.
 
     Returns
@@ -22,7 +22,7 @@ def girvan_newman(G, weight=None):
     --------
     >>> G = nx.path_graph(10)
     >>> comp = girvan_newman(G)
-    >>> print(comp[0])
+    >>> comp[0]
     ([0, 1, 2, 3, 4], [8, 9, 5, 6, 7])
 
     Notes
@@ -31,7 +31,7 @@ def girvan_newman(G, weight=None):
     edges from the original graph. Algorithm removes edge with the highest
     betweenness centrality at each step. As the graph breaks down into pieces,
     the tightly knit community structure is exposed and result can be depicted
-    as a dendogram.
+    as a dendrogram.
     """
     g = G.copy().to_undirected()
     components = []

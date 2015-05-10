@@ -11,6 +11,13 @@ def validate_communities(result, expected):
 
 class TestCommunities():
 
+    def test_girvan_newman_no_edges(self):
+        g = nx.Graph()
+        g.add_nodes_from([1, 2, 3, 4, 5])
+        result = nx.girvan_newman(g)
+        assert_equal(len(result), 0)
+        validate_communities(result, [])
+
     def test_girvan_newman_unweighted(self):
         g = nx.Graph()
         g.add_edges_from([(1, 3), (1, 2), (2, 3), (3, 7), (7, 6),
