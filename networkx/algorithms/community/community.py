@@ -5,7 +5,7 @@ __all__ = ['girvan_newman']
 
 
 def girvan_newman(G, weight=None):
-    """Find communities in graph using Girvan-Newman method.
+    """Find communities in graph using Girvan–Newman method.
 
     Parameters
     ----------
@@ -37,7 +37,7 @@ def girvan_newman(G, weight=None):
     components = []
     while g.number_of_edges() > 0:
         _remove_max_edge(g, weight)
-        components.append(_communities(g),)
+        components.append(_communities(g))
     return components
 
 
@@ -48,7 +48,7 @@ def _remove_max_edge(G, weight=None):
     Repeat this step until more connected components than the connected
     components of the original graph are detected.
 
-    It is part of Girvan-Newman algorithm.
+    It is part of Girvan–Newman algorithm.
 
     :param G: NetworkX graph
     :param weight: string, optional (default=None) Edge data key corresponding
@@ -67,7 +67,7 @@ def _communities(G):
     """
     Stores nodes of every connected component of graph in a tuple.
 
-    It is part of Girvan-Newman algorithm.
+    It is part of Girvan–Newman algorithm.
 
     :param G: NetworkX graph
     :return: Tuple which contains the list of nodes of every connected component

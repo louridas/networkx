@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from nose.tools import *
+from nose.tools import assert_equal
 import networkx as nx
 import collections
 
