@@ -50,18 +50,20 @@ def louvain(g):
 def _one_pass(g):
     increase = True
     p = nx.Graph()
+    inner = []
+    tot = []
     for i in nx.nodes_iter(g):
         p[i] = i
-        _init(g, i)
+        _init(g, i, inner, tot)
     while increase:
         increase = False
         for i in nx.nodes_iter(g):
             for j in nx.neighbors(g, i):
                 c_old = p[i]
-                _remove(i, c_old, p)
+                _remove(i, c_old, p, inner, tot)
                 c = p[j]
                 c_new = p[j]
-            _insert(i, c_new, p)
+            _insert(i, c_new, p, inner, tot)
             if c_old is not c_new:
                 increase = True
     return g
@@ -71,35 +73,35 @@ def _partition_to_graph(p, g):
     return p, g
 
 
-def _init(g, i):
+def _init(g, i, inner, tot):
     if nx.is_weighted(g, (i, i)):
-        init[i] = g.edge[i][i]['weight']
+        inner[i] = g.edge[i][i]['weight']
     else:
-        init[i] = 0
+        inner[i] = 0
     tot[i] = g.degree(i)
 
 
-def _remove(i, c, p):
+def _remove(i, c, p, inner, tot):
     if nx.is_weighted(c, (i, i)):
-        init[c] -= 2 * _k_in(i, c) + c.edge[i][i]['weight']
+        inner[c] -= 2 * _k_in(i, c) + c.edge[i][i]['weight']
     else:
-        init[c] -= 2 * _k_in(i, c)
+        inner[c] -= 2 * _k_in(i, c)
     tot[c] -= g.degree(i)
     p[i] = []
 
 
-def _insert(i, c, p):
+def _insert(i, c, p, inner, tot):
     if nx.is_weighted(c, (i, i)):
-        init[c] += 2 * _k_in(i, c) + c.edge[i][i]['weight']
+        inner[c] += 2 * _k_in(i, c) + c.edge[i][i]['weight']
     else:
-        init[c] += 2 * _k_in(i, c)
+        inner[c] += 2 * _k_in(i, c)
     tot[c] -= g.degree(i)
     tot[c] += g.degree(i)
     p[i] = c
 
 
-def _gain(i, c, g):
-    return float(_k_in(i, c)) / g.size(weight='weight') - float(_tot(c) * g.degree(i)) / 2 * pow(g.size(weight='weight'), 2)
+def _gain(i, c, g, tot):
+    return float(_k_in(i, c)) / g.size(weight='weight') - float(tot(c) * g.degree(i)) / 2 * pow(g.size(weight='weight'), 2)
 
 
 def _k_in(i, c):
