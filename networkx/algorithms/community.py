@@ -40,8 +40,7 @@ def louvain(g):
         improve = True
         while improve:
             p = _one_pass(g)
-            g = _partition_to_graph(p, g)
-            improve = False
+            improve, g = _partition_to_graph(p, g)
     else:
         msg = 'The graph has undefined modularity.'
         raise nx.NetworkXError(msg)
@@ -60,17 +59,18 @@ def _one_pass(g):
         for i in nx.nodes_iter(g):
             for j in nx.neighbors(g, i):
                 c_old = p[i]
-                _remove(i, c_old, p, inner, tot)
+                _remove(i, c_old, p, g, inner, tot)
                 c = p[j]
                 c_new = p[j]
-            _insert(i, c_new, p, inner, tot)
+            _insert(i, c_new, p, g, inner, tot)
             if c_old is not c_new:
                 increase = True
     return g
 
 
 def _partition_to_graph(p, g):
-    return p, g
+    is_possible = True
+    return is_possible, g
 
 
 def _init(g, i, inner, tot):
@@ -81,21 +81,20 @@ def _init(g, i, inner, tot):
     tot[i] = g.degree(i)
 
 
-def _remove(i, c, p, inner, tot):
+def _remove(i, c, p, g, inner, tot):
     if nx.is_weighted(c, (i, i)):
-        inner[c] -= 2 * _k_in(i, c) + c.edge[i][i]['weight']
+        inner[c] -= _k_in(i, c) + c.edge[i][i]['weight']
     else:
-        inner[c] -= 2 * _k_in(i, c)
+        inner[c] -= _k_in(i, c)
     tot[c] -= g.degree(i)
     p[i] = []
 
 
-def _insert(i, c, p, inner, tot):
+def _insert(i, c, p, g, inner, tot):
     if nx.is_weighted(c, (i, i)):
-        inner[c] += 2 * _k_in(i, c) + c.edge[i][i]['weight']
+        inner[c] += _k_in(i, c) + c.edge[i][i]['weight']
     else:
-        inner[c] += 2 * _k_in(i, c)
-    tot[c] -= g.degree(i)
+        inner[c] += _k_in(i, c)
     tot[c] += g.degree(i)
     p[i] = c
 
