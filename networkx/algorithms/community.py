@@ -57,7 +57,10 @@ def _one_pass(G):
     :return: The graph given separated into communities
     """
     increase = True
-    p = nx.Graph()
+    p = {}
+    c_old = {}
+    c = {}
+    c_new = {}
     inner = {}
     tot = {}
     for u in G:
@@ -66,11 +69,16 @@ def _one_pass(G):
     while increase:
         increase = False
         for u in G:
+            c_old = p[u]
+            p, inner[u], tot[u] = _remove(G, u, c_old, p, inner[u], tot[u])
+            max_gain = 0
+            best = None
             for v in nx.neighbors(G, u):
-                c_old = p[u]
-                p, inner[u], tot[u] = _remove(G, u, c_old, p, inner[u], tot[u])
                 c = p[v]
-                c_new = p[v]
+                if _gain(G, u, c, tot) > max_gain:
+                    max_gain = _gain(G, u, c, tot)
+                    best = v
+            c_new = p[best]
             p, inner[u], tot[u] = _insert(G, u, c_new, p, inner[u], tot[u])
             if c_old is not c_new:
                 increase = True
