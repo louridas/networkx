@@ -58,20 +58,20 @@ def _one_pass(G):
     """
     increase = True
     p = nx.Graph()
-    inner = []
-    tot = []
+    inner = {}
+    tot = {}
     for u in G:
         p[u] = u
-        _init(G, u, inner, tot)
+        inner[u], tot[u] = _init(G, u, inner[u], tot[u])
     while increase:
         increase = False
         for u in G:
             for v in nx.neighbors(G, u):
                 c_old = p[u]
-                _remove(u, c_old, p, G, inner, tot)
+                p, inner[u], tot[u] = _remove(G, u, c_old, p, inner[u], tot[u])
                 c = p[v]
                 c_new = p[v]
-            _insert(u, c_new, p, G, inner, tot)
+            p, inner[u], tot[u] = _insert(G, u, c_new, p, inner[u], tot[u])
             if c_old is not c_new:
                 increase = True
     return G
@@ -107,10 +107,11 @@ def _init(G, u, inner, tot):
     :return: Updated inner and tot parameters
     """
     if nx.is_weighted(G, (u, u)):
-        inner[u] = G.edge[u][u]['weight']
+        inner = G.edge[u][u]['weight']
     else:
-        inner[u] = 0
-    tot[u] = G.degree(u)
+        inner = 0
+    tot = G.degree(u)
+    return inner, tot
 
 
 def _remove(G, u, c, p, inner, tot):
@@ -127,14 +128,15 @@ def _remove(G, u, c, p, inner, tot):
     :param inner: Sum of all the weights of the links inside the community that
         the node u was moved into
     :param tot: Sum of all the weights of the links to nodes in the community
-    :return: foo
+    :return: Updated p, inner and tot parameters
     """
     if nx.is_weighted(c, (u, u)):
-        inner[c] -= _k_in(u, c) + c.edge[u][u]['weight']
+        inner -= _k_in(u, c) + c.edge[u][u]['weight']
     else:
-        inner[c] -= _k_in(u, c)
-    tot[c] -= G.degree(u)
+        inner -= _k_in(u, c)
+    tot -= G.degree(u)
     p[u] = []
+    return p, inner, tot
 
 
 def _insert(G, u, c, p, inner, tot):
@@ -151,7 +153,7 @@ def _insert(G, u, c, p, inner, tot):
     :param inner: Sum of all the weights of the links inside the community that
         the node u is moving into
     :param tot: Sum of all the weights of the links to nodes in the community
-    :return: foo
+    :return: Updated p, inner and tot parameters
     """
     if nx.is_weighted(c, (u, u)):
         inner[c] += _k_in(u, c) + c.edge[u][u]['weight']
@@ -159,6 +161,7 @@ def _insert(G, u, c, p, inner, tot):
         inner[c] += _k_in(u, c)
     tot[c] += G.degree(u)
     p[u] = c
+    return p, inner, tot
 
 
 def _gain(G, u, c, tot):
@@ -188,5 +191,4 @@ def _k_in(u, c):
     :return: Sum of the weights of the links between node u and other nodes
         in the community
     """
-    community_weight = 0
-    return sum(c.edge[u][v]['weight'] for v in G if nx.is_weighted(c, (u, v)))
+    return sum(c.edge[u][v]['weight'] for v in c if nx.is_weighted(c, (u, v)))
