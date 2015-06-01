@@ -60,12 +60,12 @@ def _one_pass(G):
     p = nx.Graph()
     inner = []
     tot = []
-    for u in nx.nodes_iter(G):
+    for u in G:
         p[u] = u
         _init(G, u, inner, tot)
     while increase:
         increase = False
-        for u in nx.nodes_iter(G):
+        for u in G:
             for v in nx.neighbors(G, u):
                 c_old = p[u]
                 _remove(u, c_old, p, G, inner, tot)
@@ -189,7 +189,4 @@ def _k_in(u, c):
         in the community
     """
     community_weight = 0
-    for v in nx.neighbors(c, u):
-        if nx.is_weighted(c, (u, v)):
-            community_weight += c.edge[u][v]['weight']
-    return community_weight
+    return sum(c.edge[u][v]['weight'] for v in G if nx.is_weighted(c, (u, v)))
