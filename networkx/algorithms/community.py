@@ -99,19 +99,9 @@ def _partition_to_graph(G, p, inner):
     """
     is_possible = True
     G2 = nx.Graph()
-    for community1 in p:
-        G2.add_node(community1)
-        G2.edge[community1][community1]['weight'] = inner[community1]
-        for community2 in p:
-            for node1 in p[community1]:
-                for node2 in p[community2]:
-                    if nx.is_weighted(G, (node1, node2)):
-                        try:
-                            G2.edge[community1][community2]['weight'] += \
-                                G.edge[node1][node2]['weight']
-                        except Exception:
-                            G2.edge[community1][community2]['weight'] = \
-                                G.edge[node1][node2]['weight']
+    G2.add_nodes_from(p.values())
+    for u, v, data in G.edges(data=True):
+        G2.add_edge(p[u], p[v], weight=G.get_edge_data(p[u], p[v], {'weight': 0}).get('weight', 1) + data.get('weight', 1))
     return is_possible, G2
 
 
