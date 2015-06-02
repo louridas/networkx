@@ -36,17 +36,18 @@ def louvain(G):
     communities from large networks created by Vincent Blondel. The method is
     a greedy optimization method that appears to run in time O(n log n).
     """
+    inner = {}
     if G.size(weight='weight') != 0:
         improve = True
         while improve:
-            p = _one_pass(G)
-            improve, G = _partition_to_graph(p, G)
+            p, inner = _one_pass(G, inner)
+            improve, G = _partition_to_graph(G, p, inner)
     else:
         msg = 'The graph has undefined modularity.'
         raise nx.NetworkXError(msg)
 
 
-def _one_pass(G):
+def _one_pass(G, inner):
     """
     Puts the Graph nodes into communities as long as it has effect to the
     modularity.
@@ -61,7 +62,6 @@ def _one_pass(G):
     c_old = {}
     c = {}
     c_new = {}
-    inner = {}
     tot = {}
     for u in G:
         p[u] = u
@@ -82,10 +82,10 @@ def _one_pass(G):
             p, inner[u], tot[u] = _insert(G, u, c_new, p, inner[u], tot[u])
             if c_old is not c_new:
                 increase = True
-    return G
+    return G, inner
 
 
-def _partition_to_graph(G, p):
+def _partition_to_graph(G, p, inner):
     """
     Creates a Graph that its nodes represent communities and its edges
     represent the connections between these communities.
@@ -98,7 +98,21 @@ def _partition_to_graph(G, p):
         a node for each community
     """
     is_possible = True
-    return is_possible, G
+    G2 = nx.Graph()
+    for community1 in p:
+        G2.add_node(community1)
+        G2.edge[community1][community1]['weight'] = inner[community1]
+        for community2 in p:
+            for node1 in p[community1]:
+                for node2 in p[community2]:
+                    if nx.is_weighted(G, (node1, node2)):
+                        try:
+                            G2.edge[community1][community2]['weight'] += \
+                                G.edge[node1][node2]['weight']
+                        except Exception:
+                            G2.edge[community1][community2]['weight'] = \
+                                G.edge[node1][node2]['weight']
+    return is_possible, G2
 
 
 def _init(G, u, inner, tot):
