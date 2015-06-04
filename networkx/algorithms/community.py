@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Algorithms to detect communities in a Graph."""
 import networkx as nx
+import networkx.algorithms.isomorphism as iso
 __author__ = """\n""".join(['Konstantinos Karakatsanis <dinoskarakas@gmail.com>',
                             'Thodoris Sotiropoulos <theosotr@windowslive.com>'])
 #    Copyright (C) 2004-2015 by
@@ -36,18 +37,17 @@ def louvain(G):
     communities from large networks created by Vincent Blondel. The method is
     a greedy optimization method that appears to run in time O(n log n).
     """
-    inner = {}
     if G.size(weight='weight') != 0:
         improve = True
         while improve:
-            p, inner = _one_pass(G, inner)
-            improve, G = _partition_to_graph(G, p, inner)
+            p = _one_pass(G)
+            improve, G = _partition_to_graph(G, p)
     else:
         msg = 'The graph has undefined modularity.'
         raise nx.NetworkXError(msg)
 
 
-def _one_pass(G, inner):
+def _one_pass(G):
     """
     Puts the Graph nodes into communities as long as it has effect to the
     modularity.
@@ -59,6 +59,7 @@ def _one_pass(G, inner):
     """
     increase = True
     p = {}
+    inner = {}
     c_old = {}
     c = {}
     c_new = {}
@@ -82,15 +83,17 @@ def _one_pass(G, inner):
             p, inner[u], tot[u] = _insert(G, u, c_new, p, inner[u], tot[u])
             if c_old is not c_new:
                 increase = True
-    return G, inner
+    return G
 
 
-def _partition_to_graph(G, p, inner):
+def _partition_to_graph(G, p):
     """
     Creates a Graph that its nodes represent communities and its edges
     represent the connections between these communities.
 
     It is part of Louvain's algorithm.
+
+    After https://goo.gl/BB78Mv lines 304-312
 
     :param G: NetworkX graph
     :param p: A partition of the Graph
@@ -101,8 +104,11 @@ def _partition_to_graph(G, p, inner):
     G2 = nx.Graph()
     G2.add_nodes_from(p.values())
     for u, v, data in G.edges(data=True):
-        G2.add_edge(p[u], p[v], weight=G.get_edge_data(p[u], p[v], {'weight': 0}).get('weight', 1) + data.get('weight', 1))
-    return is_possible, G2
+        u_v_weight = data.get("weight", 1)
+        weight = G2.get_edge_data(p[u], p[v], {'weight': 0}).get('weight', 1) + u_v_weight
+        G2.add_edge(p[u], p[v], weight=weight)
+    em = iso.numerical_edge_match('weight', 1)
+    return nx.is_isomorphic(G, G2, edge_match=em), G2
 
 
 def _init(G, u, inner, tot):
@@ -188,7 +194,8 @@ def _gain(G, u, c, tot):
     :param tot: Sum of all the weights of the links to nodes in the community
     :return: The change in modularity
     """
-    return float(_k_in(u, c)) / G.size(weight='weight') - float(tot(c) * G.degree(u)) / 2 * pow(G.size(weight='weight'), 2)
+    m = G.size(weight='weight')
+    return float(_k_in(u, c)) / (2 * m) - float(tot(c) * G.degree(u)) / (2 * pow(m, 2))
 
 
 def _k_in(u, c):
