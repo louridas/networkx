@@ -2,8 +2,7 @@
 """Algorithms to detect communities in a Graph."""
 import networkx as nx
 import networkx.algorithms.isomorphism as iso
-__author__ = """\n""".join(['Konstantinos Karakatsanis <dinoskarakas@gmail.com>',
-                            'Thodoris Sotiropoulos <theosotr@windowslive.com>'])
+__author__ = """\n""".join(['Konstantinos Karakatsanis <dinoskarakas@gmail.com>'])
 #    Copyright (C) 2004-2015 by
 #    Aric Hagberg <hagberg@lanl.gov>
 #    Dan Schult <dschult@colgate.edu>
@@ -149,9 +148,9 @@ def _remove(G, u, c, p, inner, tot):
     :return: Updated p, inner and tot parameters
     """
     if nx.is_weighted(c, (u, u)):
-        inner -= _k_in(u, c) + c.edge[u][u]['weight']
+        inner -= _k_in(G, u, c) + c.edge[u][u]['weight']
     else:
-        inner -= _k_in(u, c)
+        inner -= _k_in(G, u, c)
     tot -= G.degree(u)
     p[u] = []
     return p, inner, tot
@@ -174,9 +173,9 @@ def _insert(G, u, c, p, inner, tot):
     :return: Updated p, inner and tot parameters
     """
     if nx.is_weighted(c, (u, u)):
-        inner[c] += _k_in(u, c) + c.edge[u][u]['weight']
+        inner[c] += _k_in(G, u, c) + c.edge[u][u]['weight']
     else:
-        inner[c] += _k_in(u, c)
+        inner[c] += _k_in(G, u, c)
     tot[c] += G.degree(u)
     p[u] = c
     return p, inner, tot
@@ -195,10 +194,10 @@ def _gain(G, u, c, tot):
     :return: The change in modularity
     """
     m = G.size(weight='weight')
-    return float(_k_in(u, c)) / (2 * m) - float(tot(c) * G.degree(u)) / (2 * pow(m, 2))
+    return float(_k_in(G, u, c)) / (2 * m) - float(tot(c) * G.degree(u)) / (2 * pow(m, 2))
 
 
-def _k_in(u, c):
+def _k_in(G, u, c):
     """
     Calculates the sum of the weights of the links between node u and other
     nodes in the community.
@@ -210,4 +209,4 @@ def _k_in(u, c):
     :return: Sum of the weights of the links between node u and other nodes
         in the community
     """
-    return sum(c.edge[u][v]['weight'] for v in c if nx.is_weighted(c, (u, v)))
+    return sum(G.edge[u][v]['weight'] for v in c if nx.is_weighted(G, (u, v)))
