@@ -74,8 +74,8 @@ def _one_pass(G):
                 max_gain = 0
                 for v in nx.neighbors(G, u):
                     c = p[v]
-                    if _gain(G, u, c, tot) > max_gain:
-                        max_gain = _gain(G, u, c, tot)
+                    if _gain(G, u, c, p, tot) > max_gain:
+                        max_gain = _gain(G, u, c, p, tot)
                         best = v
             try:
                 c_new = p[best]
@@ -142,7 +142,7 @@ def _remove(G, u, c, p, inner, tot):
     :param tot: Sum of all the weights of the links to nodes in the community
     :return: Updated p, inner and tot parameters
     """
-    inner -= _k_in(G, u, c) + G.get_edge_data(u, u, {'weight': 0}).get('weight', 1)
+    inner -= _k_in(G, u, c, p) + G.get_edge_data(u, u, {'weight': 0}).get('weight', 1)
     tot -= G.degree(u)
     p[u] = []
     return p, inner, tot
@@ -164,13 +164,13 @@ def _insert(G, u, c, p, inner, tot):
     :param tot: Sum of all the weights of the links to nodes in the community
     :return: Updated p, inner and tot parameters
     """
-    inner += _k_in(G, u, c) + G.get_edge_data(u, u, {'weight': 0}).get('weight', 1)
+    inner += _k_in(G, u, c, p) + G.get_edge_data(u, u, {'weight': 0}).get('weight', 1)
     tot += G.degree(u)
     p[u] = c
     return p, inner, tot
 
 
-def _gain(G, u, c, tot):
+def _gain(G, u, c, p, tot):
     """
     Calculates the change in the modularity.
 
@@ -183,10 +183,10 @@ def _gain(G, u, c, tot):
     :return: The change in modularity
     """
     m = G.size(weight='weight')
-    return float(_k_in(G, u, c)) / (2 * m) - float(tot[c] * G.degree(u)) / (2 * pow(m, 2))
+    return float(_k_in(G, u, c, p)) / (2 * m) - float(tot[c] * G.degree(u)) / (2 * pow(m, 2))
 
 
-def _k_in(G, u, c):
+def _k_in(G, u, c, p):
     """
     Calculates the sum of the weights of the links between node u and other
     nodes in the community.
@@ -198,4 +198,4 @@ def _k_in(G, u, c):
     :return: Sum of the weights of the links between node u and other nodes
         in the community
     """
-    return sum(G.get_edge_data(u, v, {'weight': 0}).get('weight', 1) for v in c)
+    return sum(G.get_edge_data(u, v, {'weight': 0}).get('weight', 1) for v in G if p[v] == c)
