@@ -64,24 +64,27 @@ def _one_pass(G):
     tot = {}
     for u in G:
         p[u] = u
-        inner[u], tot[u] = _init(G, u, inner[u], tot[u])
+        inner[u], tot[u] = _init(G, u)
     while increase:
         increase = False
         for u in G:
             c_old = p[u]
             p, inner[u], tot[u] = _remove(G, u, c_old, p, inner[u], tot[u])
-            max_gain = 0
-            best = None
-            for v in nx.neighbors(G, u):
-                c = p[v]
-                if _gain(G, u, c, tot) > max_gain:
-                    max_gain = _gain(G, u, c, tot)
-                    best = v
-            c_new = p[best]
+            if G.neighbors(u) != 0:
+                max_gain = 0
+                for v in nx.neighbors(G, u):
+                    c = p[v]
+                    if _gain(G, u, c, tot) > max_gain:
+                        max_gain = _gain(G, u, c, tot)
+                        best = v
+            try:
+                c_new = p[best]
+            except NameError:
+                c_new = c_old
             p, inner[u], tot[u] = _insert(G, u, c_new, p, inner[u], tot[u])
             if c_old is not c_new:
                 increase = True
-    return G
+    return p
 
 
 def _partition_to_graph(G, p):
@@ -116,9 +119,6 @@ def _init(G, u):
 
     :param G: NetworkX graph
     :param u: A node of the Graph
-    :param inner: Sum of all the weights of the links inside the community that
-        node u is moving into
-    :param tot: Sum of all the weights of the links to nodes in the community
     :return: Updated inner and tot parameters
     """
     inner = G.get_edge_data(u, u, {'weight': 0}).get('weight', 1)
@@ -165,7 +165,7 @@ def _insert(G, u, c, p, inner, tot):
     :return: Updated p, inner and tot parameters
     """
     inner += _k_in(G, u, c) + G.get_edge_data(u, u, {'weight': 0}).get('weight', 1)
-    tot[c] += G.degree(u)
+    tot += G.degree(u)
     p[u] = c
     return p, inner, tot
 
@@ -183,7 +183,7 @@ def _gain(G, u, c, tot):
     :return: The change in modularity
     """
     m = G.size(weight='weight')
-    return float(_k_in(G, u, c)) / (2 * m) - float(tot(c) * G.degree(u)) / (2 * pow(m, 2))
+    return float(_k_in(G, u, c)) / (2 * m) - float(tot[c] * G.degree(u)) / (2 * pow(m, 2))
 
 
 def _k_in(G, u, c):
