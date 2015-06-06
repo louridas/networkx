@@ -36,14 +36,16 @@ def louvain(G):
     communities from large networks created by Vincent Blondel. The method is
     a greedy optimization method that appears to run in time O(n log n).
     """
-    if G.size(weight='weight') != 0:
-        improve = True
-        while improve:
-            p = _one_pass(G)
-            improve, G = _partition_to_graph(G, p)
-    else:
+    if G.size(weight='weight') == 0:
         msg = 'The graph has undefined modularity.'
         raise nx.NetworkXError(msg)
+    elif G.is_directed():
+        msg = 'The graph has undefined modularity.'
+        raise nx.NetworkXError(msg)
+    improve = True
+    while improve:
+        p = _one_pass(G)
+        improve, G = _partition_to_graph(G, p)
 
 
 def _one_pass(G):
@@ -99,7 +101,6 @@ def _partition_to_graph(G, p):
     :return: If a further Graph partition is possible and a new Graph that has
         a node for each community
     """
-    is_possible = True
     G2 = nx.Graph()
     G2.add_nodes_from(p.values())
     for u, v, data in G.edges(data=True):
