@@ -61,9 +61,6 @@ def _one_pass(G):
     increase = True
     p = {}
     inner = {}
-    c_old = {}
-    c = {}
-    c_new = {}
     tot = {}
     for u in G:
         p[u] = u
@@ -111,7 +108,7 @@ def _partition_to_graph(G, p):
     return nx.is_isomorphic(G, G2, edge_match=em), G2
 
 
-def _init(G, u, inner, tot):
+def _init(G, u):
     """
     Updates the inner and tot parameters.
 
@@ -124,10 +121,7 @@ def _init(G, u, inner, tot):
     :param tot: Sum of all the weights of the links to nodes in the community
     :return: Updated inner and tot parameters
     """
-    if nx.is_weighted(G, (u, u)):
-        inner = G.edge[u][u]['weight']
-    else:
-        inner = 0
+    inner = G.get_edge_data(u, u, {'weight': 0}).get('weight', 1)
     tot = G.degree(u)
     return inner, tot
 
@@ -148,10 +142,7 @@ def _remove(G, u, c, p, inner, tot):
     :param tot: Sum of all the weights of the links to nodes in the community
     :return: Updated p, inner and tot parameters
     """
-    if nx.is_weighted(c, (u, u)):
-        inner -= _k_in(G, u, c) + c.edge[u][u]['weight']
-    else:
-        inner -= _k_in(G, u, c)
+    inner -= _k_in(G, u, c) + G.get_edge_data(u, u, {'weight': 0}).get('weight', 1)
     tot -= G.degree(u)
     p[u] = []
     return p, inner, tot
@@ -173,10 +164,7 @@ def _insert(G, u, c, p, inner, tot):
     :param tot: Sum of all the weights of the links to nodes in the community
     :return: Updated p, inner and tot parameters
     """
-    if nx.is_weighted(c, (u, u)):
-        inner[c] += _k_in(G, u, c) + c.edge[u][u]['weight']
-    else:
-        inner[c] += _k_in(G, u, c)
+    inner += _k_in(G, u, c) + G.get_edge_data(u, u, {'weight': 0}).get('weight', 1)
     tot[c] += G.degree(u)
     p[u] = c
     return p, inner, tot
@@ -210,4 +198,4 @@ def _k_in(G, u, c):
     :return: Sum of the weights of the links between node u and other nodes
         in the community
     """
-    return sum(G.edge[u][v]['weight'] for v in c if nx.is_weighted(G, (u, v)))
+    return sum(G.get_edge_data(u, v, {'weight': 0}).get('weight', 1) for v in c)
