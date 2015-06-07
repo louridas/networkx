@@ -21,14 +21,15 @@ def louvain(G):
 
     Returns
     -------
-    foo
+    A dictionary which keys are the nodes of the Graph and its values are the
+    communities that they belong
 
     Examples
     --------
-    >>> G = nx.path_graph(10)
+    >>> G = nx.erdos_renyi_graph(50, 0.01)
     >>> comp = louvain(G)
     >>> comp[0]
-    foo
+    {0: 48, 1: 48, 2: 42, 3: 42, 4: 42, 5: 11, 6: 33, 7: 33, 8: 33, 9: 23, 10: 34, 11: 11, 12: 21, 13: 11, 14: 21, 15: 35, 16: 35, 17: 35, 18: 37, 19: 37, 20: 24, 21: 21, 22: 21, 23: 23, 24: 24, 25: 24, 26: 24, 27: 48, 28: 48, 29: 48, 30: 11, 31: 43, 32: 42, 33: 33, 34: 34, 35: 35, 36: 35, 37: 37, 38: 21, 39: 21, 40: 21, 41: 21, 42: 42, 43: 43, 44: 43, 45: 11, 46: 11, 47: 11, 48: 48, 49: 48}
 
     Notes
     -----
@@ -36,6 +37,7 @@ def louvain(G):
     communities from large networks created by Vincent Blondel. The method is
     a greedy optimization method that appears to run in time O(n log n).
     """
+    tree = []
     if G.size(weight='weight') == 0:
         msg = 'The graph has undefined modularity.'
         raise nx.NetworkXError(msg)
@@ -45,7 +47,12 @@ def louvain(G):
     improve = True
     while improve:
         p = _one_pass(G)
+        try:
+            tree.append(p)
+        except NameError:
+            tree = [p]
         improve, G = _partition_to_graph(G, p)
+    return tree
 
 
 def _one_pass(G):
