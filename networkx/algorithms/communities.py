@@ -85,16 +85,17 @@ def _one_pass(G):
             p, inner[u], tot[u] = _remove(G, u, c_old, p, inner[u], tot[u])
             if G.neighbors(u) != 0:
                 max_gain = 0
+                best = None
                 for v in nx.neighbors(G, u):
                     if u != v:
                         c = p[v]
                         if _gain(G, u, c, p, tot[c]) > max_gain:
                             max_gain = _gain(G, u, c, p, tot[c])
                             best = v
-            try:
-                c_new = p[best]
-            except NameError:
+            if best is None:
                 c_new = c_old
+            else:
+                c_new = p[best]
             p, inner[u], tot[u] = _insert(G, u, c_new, p, inner[u], tot[u])
             if c_old is not c_new:
                 increase = True
