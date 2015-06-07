@@ -73,10 +73,11 @@ def _one_pass(G):
             if G.neighbors(u) != 0:
                 max_gain = 0
                 for v in nx.neighbors(G, u):
-                    c = p[v]
-                    if _gain(G, u, c, p, tot) > max_gain:
-                        max_gain = _gain(G, u, c, p, tot)
-                        best = v
+                    if u != v:
+                        c = p[v]
+                        if _gain(G, u, c, p, tot[c]) > max_gain:
+                            max_gain = _gain(G, u, c, p, tot[c])
+                            best = v
             try:
                 c_new = p[best]
             except NameError:
@@ -102,13 +103,16 @@ def _partition_to_graph(G, p):
         a node for each community
     """
     G2 = nx.Graph()
-    G2.add_nodes_from(p.values())
-    for u, v, data in G.edges(data=True):
-        u_v_weight = data.get("weight", 1)
-        weight = G2.get_edge_data(p[u], p[v], {'weight': 0}).get('weight', 1) + u_v_weight
-        G2.add_edge(p[u], p[v], weight=weight)
-    em = iso.numerical_edge_match('weight', 1)
-    return nx.is_isomorphic(G, G2, edge_match=em), G2
+    if G.number_of_nodes() > 2:
+        G2.add_nodes_from(p.values())
+        for u, v, data in G.edges(data=True):
+            u_v_weight = data.get("weight", 1)
+            weight = G2.get_edge_data(p[u], p[v], {'weight': 0}).get('weight', 1) + u_v_weight
+            G2.add_edge(p[u], p[v], weight=weight)
+            em = iso.numerical_edge_match('weight', 1)
+        return (not nx.is_isomorphic(G, G2, edge_match=em)), G2
+    else:
+        return False, G
 
 
 def _init(G, u):
@@ -183,7 +187,7 @@ def _gain(G, u, c, p, tot):
     :return: The change in modularity
     """
     m = G.size(weight='weight')
-    return float(_k_in(G, u, c, p)) / (2 * m) - float(tot[c] * G.degree(u)) / (2 * pow(m, 2))
+    return float(_k_in(G, u, c, p)) / (2 * m) - float(tot * G.degree(u)) / (2 * pow(m, 2))
 
 
 def _k_in(G, u, c, p):
