@@ -40,11 +40,13 @@ class TestCommunity:
         p = nx.louvain(G)
         assert_equal(1, 1)
 
+    @raises(nx.NetworkXError)
     def test_non_weighted_exception_louvain(self):
         G = nx.Graph()
         G.add_nodes_from([1, 2, 3, 4])
         assert_raises(nx.NetworkXError, nx.louvain(G))
 
+    @raises(nx.NetworkXError)
     def test_directed_exception_louvain(self):
         G = nx.DiGraph()
         G.add_weighted_edges_from([('0', '3', 3), ('0', '1', -5),
