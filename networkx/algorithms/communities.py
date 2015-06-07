@@ -2,7 +2,8 @@
 """Algorithms to detect communities in a Graph."""
 import networkx as nx
 import networkx.algorithms.isomorphism as iso
-__author__ = """\n""".join(['Konstantinos Karakatsanis <dinoskarakas@gmail.com>'])
+__author__ = """\n""".join(['Konstantinos Karakatsanis '
+                            '<dinoskarakas@gmail.com>'])
 #    Copyright (C) 2004-2015 by
 #    Aric Hagberg <hagberg@lanl.gov>
 #    Dan Schult <dschult@colgate.edu>
@@ -29,7 +30,12 @@ def louvain(G):
     >>> G = nx.erdos_renyi_graph(50, 0.01)
     >>> comp = louvain(G)
     >>> comp[0]
-    {0: 48, 1: 48, 2: 42, 3: 42, 4: 42, 5: 11, 6: 33, 7: 33, 8: 33, 9: 23, 10: 34, 11: 11, 12: 21, 13: 11, 14: 21, 15: 35, 16: 35, 17: 35, 18: 37, 19: 37, 20: 24, 21: 21, 22: 21, 23: 23, 24: 24, 25: 24, 26: 24, 27: 48, 28: 48, 29: 48, 30: 11, 31: 43, 32: 42, 33: 33, 34: 34, 35: 35, 36: 35, 37: 37, 38: 21, 39: 21, 40: 21, 41: 21, 42: 42, 43: 43, 44: 43, 45: 11, 46: 11, 47: 11, 48: 48, 49: 48}
+    {0: 48, 1: 48, 2: 42, 3: 42, 4: 42, 5: 11, 6: 33, 7: 33, 8: 33, 9: 23,
+    10: 34, 11: 11, 12: 21, 13: 11, 14: 21, 15: 35, 16: 35, 17: 35, 18: 37,
+    19: 37, 20: 24, 21: 21, 22: 21, 23: 23, 24: 24, 25: 24, 26: 24, 27: 48,
+    28: 48, 29: 48, 30: 11, 31: 43, 32: 42, 33: 33, 34: 34, 35: 35, 36: 35,
+    37: 37, 38: 21, 39: 21, 40: 21, 41: 21, 42: 42, 43: 43, 44: 43, 45: 11,
+    46: 11, 47: 11, 48: 48, 49: 48}
 
     Notes
     -----
@@ -113,7 +119,8 @@ def _partition_to_graph(G, p):
     G2.add_nodes_from(p.values())
     for u, v, data in G.edges(data=True):
         u_v_weight = data.get("weight", 1)
-        weight = G2.get_edge_data(p[u], p[v], {'weight': 0}).get('weight', 1) + u_v_weight
+        weight = G2.get_edge_data(p[u], p[v], {'weight': 0}).get('weight', 1) \
+                 + u_v_weight
         G2.add_edge(p[u], p[v], weight=weight)
     em = iso.numerical_edge_match('weight', 1)
     return (not nx.is_isomorphic(G, G2, edge_match=em)), G2
@@ -150,7 +157,8 @@ def _remove(G, u, c, p, inner, tot):
     :param tot: Sum of all the weights of the links to nodes in the community
     :return: Updated p, inner and tot parameters
     """
-    inner -= _k_in(G, u, c, p) + G.get_edge_data(u, u, {'weight': 0}).get('weight', 1)
+    inner -= _k_in(G, u, c, p) + \
+             G.get_edge_data(u, u, {'weight': 0}).get('weight', 1)
     tot -= G.degree(u)
     p[u] = []
     return p, inner, tot
@@ -172,7 +180,8 @@ def _insert(G, u, c, p, inner, tot):
     :param tot: Sum of all the weights of the links to nodes in the community
     :return: Updated p, inner and tot parameters
     """
-    inner += _k_in(G, u, c, p) + G.get_edge_data(u, u, {'weight': 0}).get('weight', 1)
+    inner += _k_in(G, u, c, p) + \
+             G.get_edge_data(u, u, {'weight': 0}).get('weight', 1)
     tot += G.degree(u)
     p[u] = c
     return p, inner, tot
@@ -191,7 +200,8 @@ def _gain(G, u, c, p, tot):
     :return: The change in modularity
     """
     m = G.size(weight='weight')
-    return float(_k_in(G, u, c, p)) / (2 * m) - float(tot * G.degree(u)) / (2 * pow(m, 2))
+    return float(_k_in(G, u, c, p)) / (2 * m) - \
+           float(tot * G.degree(u)) / (2 * pow(m, 2))
 
 
 def _k_in(G, u, c, p):
@@ -206,4 +216,5 @@ def _k_in(G, u, c, p):
     :return: Sum of the weights of the links between node u and other nodes
         in the community
     """
-    return sum(G.get_edge_data(u, v, {'weight': 0}).get('weight', 1) for v in G if p[v] == c)
+    return sum(G.get_edge_data(u, v, {'weight': 0}).get('weight', 1)
+               for v in G if p[v] == c)
