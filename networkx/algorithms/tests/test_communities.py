@@ -38,7 +38,6 @@ class TestCommunity:
         G.add_edge(10, 14)
         G.add_edge(11, 13)
         p = nx.louvain(G)
-        assert_equal(1, 1)
 
     @raises(nx.NetworkXError)
     def test_non_weighted_exception_louvain(self):
