@@ -109,8 +109,6 @@ def _partition_to_graph(G, p):
 
     It is part of Louvain's algorithm.
 
-    After https://goo.gl/BB78Mv lines 304-312
-
     :param G: NetworkX graph
     :param p: A partition of the Graph
     :return: If a further Graph partition is possible and a new Graph that has
@@ -197,6 +195,7 @@ def _gain(G, u, c, p, tot):
     :param G: NetworkX graph
     :param u: A node of the Graph
     :param c: The community the node u is going to move into
+    :param p: The current partition of the nodes
     :param tot: Sum of all the weights of the links to nodes in the community
     :return: The change in modularity
     """
@@ -212,8 +211,10 @@ def _k_in(G, u, c, p):
 
     It is part of Louvain's algorithm.
 
+    :param G: NetworkX graph
     :param u: A node of the Graph
     :param c: The community the node u is moving into
+    :param p: The current partition of the nodes
     :return: Sum of the weights of the links between node u and other nodes
         in the community
     """
