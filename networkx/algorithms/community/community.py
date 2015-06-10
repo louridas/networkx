@@ -37,7 +37,8 @@ def girvan_newman(G, weight=None):
     components = []
     while g.number_of_edges() > 0:
         _remove_max_edge(g, weight)
-        components.append(_communities(g))
+        components.append(tuple(list(H)
+                                for H in nx.connected_component_subgraphs(g)))
     return components
 
 
@@ -61,19 +62,3 @@ def _remove_max_edge(G, weight=None):
         for edge in G.edges():
             if betweenness[edge] == max_value:
                 G.remove_edge(*edge)
-
-
-def _communities(G):
-    """
-    Stores nodes of every connected component of graph in a tuple.
-
-    It is part of Girvan–Newman algorithm.
-
-    :param G: NetworkX graph
-    :return: Tuple which contains the list of nodes of every connected component
-    detected in graph.
-    """
-    communities_comp = ()
-    for subgraph in nx.connected_component_subgraphs(G):
-        communities_comp += (subgraph.nodes(),)
-    return communities_comp
