@@ -5,7 +5,7 @@ import networkx as nx
 
 class TestCommunity:
 
-    def test_louvain(self):
+    def test_louvain_undirected(self):
         G = nx.Graph()
         for i in range(0, 16):
             G.add_node(i)
@@ -40,15 +40,15 @@ class TestCommunity:
         p = nx.louvain(G)
 
     @raises(nx.NetworkXError)
-    def test_non_weighted_exception_louvain(self):
-        G = nx.Graph()
-        G.add_nodes_from([1, 2, 3, 4])
-        assert_raises(nx.NetworkXError, nx.louvain(G))
-
-    @raises(nx.NetworkXError)
-    def test_directed_exception_louvain(self):
+    def test_louvain_directed(self):
         G = nx.DiGraph()
         G.add_weighted_edges_from([('0', '3', 3), ('0', '1', -5),
                                    ('1', '0', -2), ('0', '2', 2),
                                    ('1', '2', -3), ('2', '3', 1)])
+        assert_raises(nx.NetworkXError, nx.louvain(G))
+
+    @raises(nx.NetworkXError)
+    def test_louvain_no_edges(self):
+        G = nx.Graph()
+        G.add_nodes_from([1, 2, 3, 4])
         assert_raises(nx.NetworkXError, nx.louvain(G))
