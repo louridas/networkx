@@ -43,21 +43,22 @@ def louvain(G):
     communities from large networks created by Vincent Blondel. The method is
     a greedy optimization method that appears to run in time O(n log n).
     """
+    H = G.copy()
     tree = []
-    if G.size(weight='weight') == 0:
+    if H.size(weight='weight') == 0:
         msg = 'The graph has undefined modularity.'
         raise nx.NetworkXError(msg)
-    elif G.is_directed():
+    elif H.is_directed():
         msg = 'The graph has undefined modularity.'
         raise nx.NetworkXError(msg)
     improve = True
     while improve:
-        p = _one_pass(G)
+        p = _one_pass(H)
         try:
             tree.append(p)
         except NameError:
             tree = [p]
-        improve, G = _partition_to_graph(G, p)
+        improve, H = _partition_to_graph(H, p)
     return tree
 
 
