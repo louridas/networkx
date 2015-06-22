@@ -3,9 +3,11 @@
 import networkx as nx
 from collections import defaultdict
 __author__ = """\n""".join(['Konstantinos Karakatsanis '
-                            '<dinoskarakas@gmail.com>'])
+                            '<dinoskarakas@gmail.com>',
+                            'Panos Louridas <louridas@gmail.com>'])
 #    Copyright (C) 2015 by
 #    Konstantinos Karakatsanis <dinoskarakas@gmail.com>
+#    Panos Louridas <louridas@gmail.com>
 #    All rights reserved.
 #    BSD license.
 __all__ = ['louvain']
