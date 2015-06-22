@@ -121,9 +121,7 @@ def _partition_to_graph(G, p, c):
         and as value a set containing the indices of the nodes that belong
         in the community
 
-    :return: a tuple (G2, aggregated); if aggregated is True then G2 is a new graph
-        corresponding to and a new Graph that has
-        a node for each community
+    :return: a new Graph that has a node for each community
 
     """
     G2 = nx.Graph()
@@ -194,9 +192,14 @@ def _insert(G, u, c_new, c, p, inner, tot):
     :param u: A node of the Graph
     :param c_new: The community the node u is moving into
     :param c: The current communities of the nodes
-    :param p: The current partition of the nodes
-    :param inner: Sum of all the weights of the links inside each community
-    :param tot: Sum of all the weights of the links to nodes in the community
+    :param p: The current partition of the nodes; when the function returns
+        we have p[u] = c_new
+    :param inner: Sum of all the weights of the links inside each community;
+        when the function returns the weights of the internal edges
+        adjacent to u have been removed
+    :param tot: Sum of all the weights of the links to nodes in the community;
+        when the function returns all the weights of edges adjacent to u
+        have been removed       
     :return: Updated p, inner and tot parameters
     """
     inner[c_new] += _k_in(G, u, c, p) + \
@@ -238,9 +241,3 @@ def _k_in(G, u, c_target, p):
     return sum(G.get_edge_data(u, v, {'weight': 0}).get('weight', 1)
                for v in G if v != u and p[v] == c_target)
 
-# G = nx.read_edgelist("louvain_example.txt", nodetype=int)
-
-# tree = louvain(G)
-# for t in tree:
-#     print t.nodes(data=True)
-#     print t.edges(data=True)
