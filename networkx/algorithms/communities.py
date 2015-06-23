@@ -58,8 +58,12 @@ def _one_pass(G):
     Part of the Louvain algorithm.
 
     :param G: NetworkX graph
-    :return: a dictionary whose keys are the nodes of the graph and the
-        values are the communities they belong
+    :return: a tuple (p, c, improvements); p is a dictionary whose keys
+        are the nodes of the graph and the values are the communities
+        they belong; c is a dictionary whose keys are the communities and
+        the values are the nodes they contain; improvements is the number
+        of times the modularity was improved by moving a node to 
+        another community
     """
     i = 0 # community index, starting from zero
     # partition dict: each entry has as key a node index and as value
